@@ -1,0 +1,28 @@
+version: '3'
+services:
+  url-svc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: url-svc
+    ports:
+      - '3000:3000'
+      - '9229:9229'
+    depends_on:
+      - mongo
+    env_file:
+      - ./.env
+    volumes:
+      - ./src:/url-svc/src
+      - ./test:/url-svc/test
+      - ./tsconfig.json:/url-svc/tsconfig.json
+      - ./tsconfig.build.json:/url-svc/tsconfig.build.json
+      - ./nest-cli.json:/url-svc/nest-cli.json
+      - ./dist:/url-svc/dist
+    restart: always
+  mongo:
+    image: mongo:4.2.1
+    hostname: mongo
+    restart: always
+    ports:
+      - '27017:27017'

@@ -1,0 +1,7 @@
+.*
+
+# We want eslintrc to run ci lint
+!.eslintrc.js
+
+npm-debug.log
+node_modules
