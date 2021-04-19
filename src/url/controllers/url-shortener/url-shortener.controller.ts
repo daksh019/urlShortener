@@ -4,15 +4,16 @@ import {
   Get,
   NotFoundException,
   Post,
-  Req,
+  Body,
   Param,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { UrlService } from '@url-svcs/url/services/url-service/url-service.service';
 import { UrlRepo } from '@url-svcs/url/repositories/url-repo';
 import { IUrlResponse } from '@url-svcs/url/interfaces/url.response.interface';
 import { isEmpty } from 'lodash';
 import { UrlDocument } from '@url-svcs/url/repositories/url-schema';
+import { UrlDto } from '@url-svcs/url/dto/url.dto';
+import { ValidationPipe } from '@url-svcs/url/pipes/validation.pipe';
 
 @Controller('url')
 export class UrlShortenerController {
@@ -27,17 +28,10 @@ export class UrlShortenerController {
    *
    */
   @Post('tinyUrl')
-  async createTinyUrl(@Req() request: Request): Promise<IUrlResponse> {
-    const { shortUrl, longUrl } = request.body;
-
-    if (!this.urlSvc.isValidLongUrl(longUrl)) {
-      throw new BadRequestException({
-        details: {
-          message:
-            'The long url is not valid. Make sure to specify http or www',
-        },
-      });
-    }
+  async createTinyUrl(
+    @Body(new ValidationPipe()) urlDto: UrlDto,
+  ): Promise<IUrlResponse> {
+    const { shortUrl, longUrl } = urlDto;
 
     const hash = this.urlSvc.getHash(longUrl);
     const existingTinyUrl = await this.urlSvc.getIfExists(hash);
@@ -60,15 +54,6 @@ export class UrlShortenerController {
         shortUrl: urlDoc.shortUrl,
       };
     } else {
-      if (!this.urlSvc.isValidShortUrl(shortUrl)) {
-        throw new BadRequestException({
-          details: {
-            message:
-              'The short url is not valid. Specify an alphanumeric short url of seven characters',
-          },
-        });
-      }
-
       try {
         const savedUrl: UrlDocument = await this.urlRepo.saveUrl({
           longUrl,
