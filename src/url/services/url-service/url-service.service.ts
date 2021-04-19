@@ -33,7 +33,7 @@ export class UrlService {
    * Utility function to generate a random string of lenght len.
    * The string contains characters randomly picked from the charset.
    */
-  public getShortUrl(): string {
+  private getShortUrl(): string {
     let randomStr = '';
     while (randomStr.length < this.shortUrlLen) {
       randomStr += this.getRandomCharFromCharset();
@@ -55,10 +55,6 @@ export class UrlService {
     );
   }
 
-  public isValidLongUrl(url: string): boolean {
-    return this.urlRegex.test(url);
-  }
-
   public async getIfExists(hash: string): Promise<UrlDocument | null> {
     // This is one way to get around the tracking of accessing a short url.
     // Depending on what do we want to track, we can change this search to
@@ -72,7 +68,7 @@ export class UrlService {
     hash: string,
     attempts = 0,
   ): Promise<UrlDocument> {
-    return new Promise(async resolve => {
+    return new Promise(async (resolve, reject) => {
       const shortUrl = this.getShortUrl();
 
       try {
@@ -83,13 +79,22 @@ export class UrlService {
         });
         return resolve(savedUrl);
       } catch (error) {
-        console.log('Possible Collision');
+        // console.log('Possible Collision');
         if (error.code === 11000 && attempts < 3) {
           // mongo error due to collision
           // try to get a new short url
-          return await this.generateShortUrl(longUrl, hash, attempts + 1);
+          try {
+            const urlObj = await this.generateShortUrl(
+              longUrl,
+              hash,
+              attempts + 1,
+            );
+            return resolve(urlObj);
+          } catch (e) {
+            return reject(e);
+          }
         }
-        throw error;
+        return reject(error);
       }
     });
   }

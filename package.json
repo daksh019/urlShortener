@@ -64,6 +64,9 @@
       "json",
       "ts"
     ],
+    "moduleNameMapper": {
+      "@url-svcs/(.*)": "<rootDir>/$1"
+    },
     "rootDir": "src",
     "testRegex": ".spec.ts$",
     "transform": {
