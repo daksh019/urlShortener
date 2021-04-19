@@ -5,9 +5,13 @@ import { UrlShortenerController } from './controllers/url-shortener/url-shortene
 import { UrlRepo } from './repositories/url-repo';
 import { Url, UrlSchema } from './repositories/url-schema';
 import { UrlService } from './services/url-service/url-service.service';
+import { ConfigModule } from '@url-svcs/core/config/config.module';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: Url.name, schema: UrlSchema }])],
+  imports: [
+    MongooseModule.forFeature([{ name: Url.name, schema: UrlSchema }]),
+    ConfigModule.forRoot(),
+  ],
   controllers: [UrlShortenerController, UrlRedirectController],
   providers: [UrlRepo, UrlService],
 })

@@ -4,6 +4,7 @@ import { UrlDto } from '@url-svcs/url/dto/url.dto';
 import { UrlService } from '@url-svcs/url/services/url-service/url-service.service';
 import { UrlRepo } from '@url-svcs/url/repositories/url-repo';
 import { plainToClass } from 'class-transformer';
+import { AppConfigService } from '@url-svcs/core/config/config.service';
 
 const urlService = {
   generateShortUrl: jest.fn(),
@@ -17,6 +18,10 @@ const urlRepo = {
     shortUrl: '1234567',
     hash: 'hash',
   }),
+};
+
+const configService = {
+  baseUrl: '',
 };
 
 describe('UrlShortenerController', () => {
@@ -33,6 +38,10 @@ describe('UrlShortenerController', () => {
         {
           provide: UrlRepo,
           useValue: urlRepo,
+        },
+        {
+          provide: AppConfigService,
+          useValue: configService,
         },
       ],
     }).compile();

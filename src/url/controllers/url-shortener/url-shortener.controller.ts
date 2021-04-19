@@ -14,10 +14,15 @@ import { isEmpty } from 'lodash';
 import { UrlDocument } from '@url-svcs/url/repositories/url-schema';
 import { UrlDto } from '@url-svcs/url/dto/url.dto';
 import { ValidationPipe } from '@url-svcs/url/pipes/validation.pipe';
+import { AppConfigService } from '@url-svcs/core/config/config.service';
 
 @Controller('url')
 export class UrlShortenerController {
-  constructor(private urlSvc: UrlService, private urlRepo: UrlRepo) {}
+  constructor(
+    private urlSvc: UrlService,
+    private urlRepo: UrlRepo,
+    private config: AppConfigService,
+  ) {}
   /**
    * A handler reponsible for returning a short url for a given long url.
    * Additionally a short url can also be given by the user.
@@ -32,6 +37,7 @@ export class UrlShortenerController {
     @Body(new ValidationPipe()) urlDto: UrlDto,
   ): Promise<IUrlResponse> {
     const { shortUrl, longUrl } = urlDto;
+    const baseUrl = this.config.baseUrl;
 
     const hash = this.urlSvc.getHash(longUrl);
     const existingTinyUrl = await this.urlSvc.getIfExists(hash);
@@ -39,7 +45,7 @@ export class UrlShortenerController {
     if (existingTinyUrl) {
       return {
         longUrl,
-        shortUrl: existingTinyUrl.shortUrl,
+        shortUrl: `${baseUrl}${existingTinyUrl.shortUrl}`,
       };
     }
 
@@ -51,7 +57,7 @@ export class UrlShortenerController {
       );
       return {
         longUrl,
-        shortUrl: urlDoc.shortUrl,
+        shortUrl: `${baseUrl}${urlDoc.shortUrl}`,
       };
     } else {
       try {
@@ -65,7 +71,7 @@ export class UrlShortenerController {
 
         return {
           longUrl,
-          shortUrl: savedUrl.shortUrl,
+          shortUrl: `${baseUrl}${savedUrl.shortUrl}`,
         };
       } catch (error) {
         if (error.code === 11000) {
@@ -83,7 +89,8 @@ export class UrlShortenerController {
 
   @Get('tinyUrl/:shortUrl')
   async getLongUrl(@Param('shortUrl') shortUrl: string): Promise<IUrlResponse> {
-    console.log(shortUrl);
+    const baseUrl = this.config.baseUrl;
+
     if (!this.urlSvc.isValidShortUrl(shortUrl)) {
       throw new BadRequestException({
         response: {
@@ -97,7 +104,7 @@ export class UrlShortenerController {
     if (savedUrl) {
       return {
         longUrl: savedUrl.longUrl,
-        shortUrl: savedUrl.shortUrl,
+        shortUrl: `${baseUrl}${savedUrl.shortUrl}`,
       };
     } else {
       throw new NotFoundException({
