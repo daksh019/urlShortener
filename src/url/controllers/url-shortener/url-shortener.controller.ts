@@ -55,6 +55,8 @@ export class UrlShortenerController {
       };
     } else {
       try {
+        // it is important to attempt a save here.
+        // to get a collision in case of duplicate generation.
         const savedUrl: UrlDocument = await this.urlRepo.saveUrl({
           longUrl,
           shortUrl,
@@ -67,6 +69,8 @@ export class UrlShortenerController {
         };
       } catch (error) {
         if (error.code === 11000) {
+          // possible security issue, once can make attempts to guess the
+          // short urls in use.
           throw new BadRequestException({
             details: {
               message: 'The short url is already taken',

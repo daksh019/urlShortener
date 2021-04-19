@@ -28,6 +28,10 @@ describe('UrlService', () => {
     service = module.get<UrlService>(UrlService);
   });
 
+  afterEach(async () => {
+    jest.resetAllMocks();
+  });
+
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
